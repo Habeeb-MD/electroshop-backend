@@ -1,0 +1,37 @@
+services:
+  user_and_auth_service:
+    build: ./user_and_auth_service
+    ports:
+      - "3000:3000"
+    environment:
+      - network=host
+      - DATABASE=${MONGO_DB}
+      - JWT_SECRET=${JWT_SECRET}
+      - NOTIFICATION_SERVICE=${NOTIFICATION_SERVICE}
+
+  product_and_cart_services:
+    build: ./product_and_cart_services
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    environment:
+      - network=host
+      - POSTGRES_DB_PASSWORD=${POSTGRES_DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+
+  order_payment_and_notification_services:
+    build: ./order_payment_and_notification_services
+    ports:
+      - "3003:3003"
+      - "3004:3004"
+      - "3005:3005"
+    environment:
+      - network=host
+      - POSTGRES_DB_PASSWORD=${POSTGRES_DB_PASSWORD}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
+      - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - RABBITMQ_URL=${RABBITMQ_URL}
