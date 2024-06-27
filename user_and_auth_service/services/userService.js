@@ -63,18 +63,20 @@ const getAllUsers = async () => {
   return User.find();
 };
 
-const updatePassword = async (userId) => {
+const updatePassword = async (userId, requestBody) => {
   // 1) Get user from collection
   const user = await User.findById(userId).select("+password");
 
   // 2) Check if POSTed current password is correct
-  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
-    return next(new AppError("Your current password is wrong.", 401));
+  if (
+    !(await user.correctPassword(requestBody.passwordCurrent, user.password))
+  ) {
+    throw new AppError("Your current password is wrong.", 401);
   }
 
   // 3) If so, update password
-  user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
+  user.password = requestBody.password;
+  user.passwordConfirm = requestBody.passwordConfirm;
   await user.save();
   return user;
 };

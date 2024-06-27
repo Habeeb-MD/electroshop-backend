@@ -2,9 +2,10 @@ services:
   user_and_auth_service:
     build: ./user_and_auth_service
     network_mode: "host"
-    ports:
-      - "3000:3000"
+    #    ports:
+    #      - "3000:3000"
     environment:
+      - NODE_ENV=${NODE_ENV}
       - DATABASE=${MONGO_DB}
       - JWT_SECRET=${JWT_SECRET}
       - NOTIFICATION_SERVICE_URL=${NOTIFICATION_SERVICE_URL}
@@ -12,11 +13,11 @@ services:
   product_and_cart_services:
     build: ./product_and_cart_services
     network_mode: "host"
-    ports:
-      - "3001:3001"
-      - "3002:3002"
+    #    ports:
+    #      - "3001:3001"
+    #      - "3002:3002"
     environment:
-      - network=host
+      - NODE_ENV=${NODE_ENV}
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
@@ -29,16 +30,19 @@ services:
   order_payment_and_notification_services:
     build: ./order_payment_and_notification_services
     network_mode: "host"
-    ports:
-      - "3003:3003"
-      - "3004:3004"
-      - "3005:3005"
+    #    ports:
+    #      - "3003:3003"
+    #      - "3004:3004"
+    #      - "3005:3005"
     environment:
+      - NODE_ENV=${NODE_ENV}
       - RABBITMQ_URL=${RABBITMQ_URL}
       - MAILGUN_API_KEY=${MAILGUN_API_KEY}
       - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
+      - SENDER_EMAIL=${SENDER_EMAIL}
       - USER_SERVICE_URL=${USER_SERVICE_URL}
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - NOTIFICATION_SERVICE_URL=${NOTIFICATION_SERVICE_URL}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DB_USER=${DB_USER}

@@ -68,7 +68,7 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
-  const user = await userService.updatePassword(req.user.id);
+  const user = await userService.updatePassword(req.user.id, req.body);
   authService.createSendToken(user, 200, res);
 });
 

@@ -28,10 +28,8 @@ const createTransaction = async (
     }
   }
 
-  const user = await getUser(userId);
-
   // Create new transaction
-  const transaction = await Transaction.create({
+  return await Transaction.create({
     user_id: userId,
     order_id: orderId,
     amount,
@@ -39,8 +37,6 @@ const createTransaction = async (
     payment_details: paymentDetails,
     status: "pending",
   });
-
-  return transaction;
 };
 
 const processTransaction = async (transactionId) => {
@@ -79,14 +75,18 @@ const processTransaction = async (transactionId) => {
       payment_status: paymentResult.status,
     });
 
-    const user = await getUser(userId);
-
+    const user = await getUser(transaction.user_id);
     // Notify the Notification Service
-    await sendNotifications(user.email, transaction.amount);
+    await sendNotifications(transaction.user_id, user.data.user.email, {
+      transactionId: transaction.id,
+      orderId: transaction.order_id,
+      amount: transaction.amount,
+    });
 
     return paymentResult;
   } catch (error) {
     // Update transaction status to failed in case of error
+    console.log({ "transaction error": error });
     await transaction.update({ status: "failed", payment_status: "failed" });
     throw error;
   }

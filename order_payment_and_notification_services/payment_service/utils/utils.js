@@ -18,16 +18,15 @@ const processPaymentWithGateway = async (
   };
 };
 
-const sendNotifications = async (email, message) => {
-  console.log("Notification sent :- ", { email, message });
+const sendNotifications = async (userId, recipientEmail, message) => {
   await email.sendNotifications({
-    recipientEmail: email,
+    userId,
+    recipientEmail,
     templateId: 1,
     subject: "Transaction completed Successfully",
-    data: {
-      message,
-    },
+    data: message,
   });
+  console.log("notification sent successfully");
 };
 
 const getUser = async (userID) => {

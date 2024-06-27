@@ -52,14 +52,23 @@ const consumeNotifications = async () => {
             "forgotPasswordTemplate.html",
           );
           content = await fs.readFile(templatePath, "utf8");
-          content = content.replace("{{year}}", new Date().getFullYear());
+        } else if (templateId === 1) {
+          const templatePath = path.join(
+            __dirname,
+            "../",
+            "templates",
+            "transactionCompleted.html",
+          );
+          content = await fs.readFile(templatePath, "utf8");
         } else {
           const template = await Template.findByPk(templateId);
           if (!template) {
-            throw new Error("Template not found");
+            console.log("Template not found");
+            return;
           }
           content = template.content;
         }
+        content = content.replace("{{year}}", new Date().getFullYear());
 
         for (const key in data) {
           content = content.replace(new RegExp(`{{${key}}}`, "g"), data[key]);
