@@ -1,21 +1,25 @@
 const { Order, OrderItem } = require("../models");
-const { fetchProductDetails } = require("../utils/utils");
+const {
+  fetchProductDetails,
+  createAndProcessTransaction,
+} = require("../utils/utils");
 
-const createOrder = async (userId, items) => {
+const createOrder = async (userId, items, shippingAddress) => {
   let totalAmount = 0;
 
   const orderItems = await Promise.all(
     items.map(async (item) => {
-      const product = await fetchProductDetails(item.product_id);
+      const product = await fetchProductDetails(item.id);
 
       if (!product) {
-        throw new Error(`Product with ID ${item.product_id} not found`);
+        throw new Error(`Product with ID ${item.id} not found`);
       }
       const itemTotal = product.price * item.quantity;
       totalAmount += itemTotal;
 
       return {
-        product_id: item.product_id,
+        productId: product.id,
+        productName: product.name,
         quantity: item.quantity,
         price: product.price,
         itemTotal,
@@ -27,22 +31,39 @@ const createOrder = async (userId, items) => {
     user_id: userId,
     total_amount: totalAmount,
     status: "pending",
-    payment_status: "unpaid",
+    shipping_address: shippingAddress,
   };
   const order = await Order.create(orderData);
 
-  await Promise.all(
-    orderItems.map((item) => {
-      return OrderItem.create({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.price,
-      });
-    }),
-  );
+  //these are async request, but we don't have to wait for them to finish, since they are not return value
+  orderItems.map((item) => {
+    return OrderItem.create({
+      order_id: order.id,
+      product_id: item.productId,
+      product_name: item.productName,
+      quantity: item.quantity,
+      price: item.price,
+    });
+  });
 
-  return { order, orderItems };
+  return order;
+};
+
+const processOrder = async (orderId, amount, paymentGateway, paymentMethod) => {
+  const paymentResult = await createAndProcessTransaction(
+    orderId,
+    amount,
+    paymentGateway,
+    paymentMethod,
+  );
+  await updateOrder(orderId, {
+    status: "completed",
+    payment_details: {
+      cardName: paymentMethod.cardName,
+      cardNumber: paymentMethod.cardNumber,
+    },
+  });
+  return paymentResult;
 };
 
 const getOrders = async () => {
@@ -67,17 +88,13 @@ const getOrderById = async (id) => {
   });
 };
 
-const updateOrderStatus = async (id, status) => {
-  await Order.update({ status }, { where: { order_id: id } });
+const updateOrder = async (id, updatedKeyValue = {}) => {
+  await Order.update(updatedKeyValue, { where: { id } });
   return await getOrderById(id);
 };
 
-const updatePaymentStatus = async (id, paymentStatus) => {
-  await Order.update(
-    { payment_status: paymentStatus },
-    { where: { order_id: id } },
-  );
-  return await getOrderById(id);
+const updateOrderStatus = async (id, status) => {
+  return await updateOrder(id, { status });
 };
 
 const deleteOrder = async (id) => {
@@ -88,7 +105,8 @@ module.exports = {
   createOrder,
   getOrders,
   getOrderById,
+  updateOrder,
   updateOrderStatus,
-  updatePaymentStatus,
   deleteOrder,
+  processOrder,
 };

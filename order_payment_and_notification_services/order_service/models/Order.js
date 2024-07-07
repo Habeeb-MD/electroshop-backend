@@ -19,18 +19,21 @@ const Order = sequelize.define(
       allowNull: false,
     },
     status: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM("pending", "completed"),
       allowNull: false,
     },
-    payment_status: {
-      type: DataTypes.STRING,
+    shipping_address: {
+      type: DataTypes.JSON,
       allowNull: false,
+    },
+    payment_details: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
   },
   {
-    tableName: "order",
+    tableName: "orders",
     underscored: true,
-    timestamps: false,
   },
 );
 

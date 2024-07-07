@@ -81,9 +81,7 @@ const forgotPassword = async (req) => {
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetURL = `${req.protocol}://${req.get(
-    "host",
-  )}/api/auth/resetPassword/${resetToken}`;
+  const resetURL = `${req.get("origin")}/reset-password/${resetToken}`;
 
   // const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
 
@@ -110,10 +108,8 @@ const forgotPassword = async (req) => {
 };
 
 const resetPassword = async (req) => {
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
+  const token = req.params.token;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   const user = await User.findOne({
     passwordResetToken: hashedToken,

@@ -1,6 +1,7 @@
 const catchAsync = require("../utils/catchAsync");
 const userService = require("../services/userService");
 const authService = require("../services/authService");
+const AppError = require("../utils/appError");
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   const updatedUser = await userService.updateMe(req.user.id, req.body);
@@ -29,7 +30,10 @@ exports.createUser = (req, res) => {
 };
 
 exports.getUser = catchAsync(async (req, res, next) => {
-  const user = await userService.getUser(req.params.id);
+  const user = await req.user;
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   res.status(200).json({
     status: "success",
     data: {
@@ -70,10 +74,4 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 exports.updatePassword = catchAsync(async (req, res, next) => {
   const user = await userService.updatePassword(req.user.id, req.body);
   authService.createSendToken(user, 200, res);
-});
-
-exports.parseUserMiddleware = catchAsync(async (req, res, next) => {
-  const authUserHeader = req.headers["x-auth-user"];
-  if (authUserHeader) req.user = JSON.parse(authUserHeader);
-  next();
 });

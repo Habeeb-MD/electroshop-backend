@@ -68,10 +68,13 @@ const consumeNotifications = async () => {
           }
           content = template.content;
         }
-        content = content.replace("{{year}}", new Date().getFullYear());
+        content = content.replace("{{ year }}", new Date().getFullYear());
 
         for (const key in data) {
-          content = content.replace(new RegExp(`{{${key}}}`, "g"), data[key]);
+          content = content.replace(
+            new RegExp("{{ " + key + " }}", "g"),
+            data[key],
+          );
         }
 
         notification = await Notification.create({

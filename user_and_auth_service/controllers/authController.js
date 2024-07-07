@@ -3,7 +3,17 @@ const authService = require("../services/authService");
 const AppError = require("./../utils/appError");
 
 exports.signup = catchAsync(async (req, res, next) => {
-  const newUser = await authService.signup(req.body);
+  const { firstName, lastName, email, password, passwordConfirm } = req.body;
+  if (!firstName || !lastName || !email || !password || !passwordConfirm) {
+    return next(new AppError("Please provide all the details!", 400));
+  }
+  const name = firstName.trim() + " " + lastName.trim();
+  const newUser = await authService.signup({
+    name,
+    email,
+    password,
+    passwordConfirm,
+  });
   authService.createSendToken(newUser, 201, res);
 });
 
@@ -18,8 +28,9 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.validateToken = catchAsync(async (req, res, next) => {
-  let token;
+  let token = req.cookies.jwt;
   if (
+    !token &&
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
@@ -31,19 +42,15 @@ exports.validateToken = catchAsync(async (req, res, next) => {
       new AppError("You are not logged in! Please log in to get access.", 401),
     );
   }
-  const user = await authService.validateToken(token);
-  const userData = JSON.stringify({
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  });
+  req.user = await authService.validateToken(token);
+  next();
+});
 
-  res.set("X-Auth-User", userData);
-
+exports.authStatus = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {
-      user: userData,
+      user: req.user,
     },
   });
 });
@@ -71,4 +78,14 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 exports.resetPassword = catchAsync(async (req, res, next) => {
   const user = await authService.resetPassword(req);
   authService.createSendToken(user, 200, res);
+});
+
+exports.logout = catchAsync(async (req, res, next) => {
+  const cookieOptions = {
+    expires: new Date(Date.now() - 10 * 1000),
+    httpOnly: true,
+  };
+  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+  res.cookie("jwt", "", cookieOptions);
+  res.status(200).json({ status: "success" });
 });

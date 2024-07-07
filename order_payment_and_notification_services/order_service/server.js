@@ -8,7 +8,7 @@ sequelize
   .sync({ alter: true })
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`Product service is running on port ${PORT}`);
+      console.log(`Order service is running on port ${PORT}`);
     });
   })
   .catch((err) => {

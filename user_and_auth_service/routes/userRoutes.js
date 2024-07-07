@@ -4,9 +4,10 @@ const authController = require("./../controllers/authController");
 
 const router = express.Router();
 
-//all routes{except GET(/:id)} need current user object, so these must be called only after calling auth/validateToken
-router.use(userController.parseUserMiddleware);
+//all routes need current user object, so these must be called only after calling authController/validateToken
+router.use(authController.validateToken);
 
+router.get("/me", userController.getUser);
 router.patch("/updateMe", userController.updateMe);
 router.delete("/deleteMe", userController.deleteMe);
 router.patch("/updatePassword", userController.updatePassword);
@@ -18,7 +19,6 @@ router
 
 router
   .route("/:id")
-  .get(userController.getUser)
   .patch(authController.restrictTo("admin"), userController.updateUser)
   .delete(authController.restrictTo("admin"), userController.deleteUser);
 

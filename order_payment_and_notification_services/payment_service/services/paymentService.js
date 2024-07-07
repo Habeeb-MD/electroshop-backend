@@ -1,12 +1,7 @@
 const { Transaction } = require("../models");
-const {
-  processPaymentWithGateway,
-  sendNotifications,
-  getUser,
-} = require("../utils/utils");
+const { processPaymentWithGateway } = require("../utils/utils");
 
 const createTransaction = async (
-  userId,
   orderId,
   amount,
   paymentGateway,
@@ -19,18 +14,17 @@ const createTransaction = async (
 
   if (existingTransaction) {
     if (
-      existingTransaction.status === "in_progress" ||
-      existingTransaction.status === "completed"
+      existingTransaction.status === "initiated" ||
+      existingTransaction.status === "approved"
     ) {
       throw new Error(
-        `Transaction for Order ID ${orderId} is already in progress or completed.`,
+        `Transaction for Order ID ${orderId} is already ${existingTransaction.status}.`,
       );
     }
   }
 
   // Create new transaction
   return await Transaction.create({
-    user_id: userId,
     order_id: orderId,
     amount,
     payment_gateway: paymentGateway,
@@ -46,20 +40,20 @@ const processTransaction = async (transactionId) => {
     throw new Error(`Transaction with ID ${transactionId} not found.`);
   }
 
-  if (transaction.status === "completed") {
+  if (transaction.status === "approved") {
     throw new Error(
       `Transaction with ID ${transactionId} is already completed.`,
     );
   }
 
-  if (transaction.status === "in_progress") {
+  if (transaction.status === "initiated") {
     throw new Error(
       `Transaction with ID ${transactionId} is already in progress.`,
     );
   }
 
   // Update transaction status to in_progress
-  await transaction.update({ status: "in_progress" });
+  await transaction.update({ status: "initiated" });
 
   try {
     // Process payment through payment gateway
@@ -71,23 +65,14 @@ const processTransaction = async (transactionId) => {
 
     // Update transaction status to completed
     await transaction.update({
-      status: "completed",
-      payment_status: paymentResult.status,
-    });
-
-    const user = await getUser(transaction.user_id);
-    // Notify the Notification Service
-    await sendNotifications(transaction.user_id, user.data.user.email, {
-      transactionId: transaction.id,
-      orderId: transaction.order_id,
-      amount: transaction.amount,
+      status: "approved",
     });
 
     return paymentResult;
   } catch (error) {
     // Update transaction status to failed in case of error
     console.log({ "transaction error": error });
-    await transaction.update({ status: "failed", payment_status: "failed" });
+    await transaction.update({ status: "failed" });
     throw error;
   }
 };

@@ -10,4 +10,9 @@ router
 router.get("/:id", paymentController.getTransactionById);
 router.post("/:id/process", paymentController.processTransaction);
 
+router.post(
+  "/create-and-process-transaction",
+  paymentController.createAndProcessTransaction,
+);
+
 module.exports = router;

@@ -10,20 +10,21 @@ const Transaction = sequelize.define(
       allowNull: false,
       defaultValue: Sequelize.UUIDV4,
     },
-    user_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     order_id: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: "orders", // name of the target model
+        key: "id", // key in the target model that we're referencing
+      },
+      onDelete: "CASCADE",
     },
     amount: {
       type: DataTypes.FLOAT,
       allowNull: false,
     },
     status: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM("pending", "initiated", "approved", "failed"),
       allowNull: false,
       defaultValue: "pending",
     },
@@ -33,7 +34,7 @@ const Transaction = sequelize.define(
     },
     payment_details: {
       type: DataTypes.JSONB,
-      allowNull: true,
+      allowNull: false,
     },
   },
   {
