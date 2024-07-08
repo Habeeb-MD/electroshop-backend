@@ -14,13 +14,13 @@ const getProductTypeById = async (id) => {
 
 const updateProductType = async (id, typeData) => {
   return await ProductType.update(typeData, {
-    where: { type_id: id },
+    where: { id },
   });
 };
 
 const deleteProductType = async (id) => {
   return await ProductType.destroy({
-    where: { type_id: id },
+    where: { id },
   });
 };
 
