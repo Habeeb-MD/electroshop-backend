@@ -25,6 +25,12 @@ const getOrders = catchAsync(async (req, res) => {
   res.status(200).json(orders);
 });
 
+const getOrderByUserId = catchAsync(async (req, res) => {
+  const userId = req.user._id;
+  const orders = await orderService.getOrderByUserId(userId);
+  res.status(200).json(orders);
+});
+
 const getOrderById = catchAsync(async (req, res) => {
   const order = await orderService.getOrderById(req.params.id);
   if (order) {
@@ -90,6 +96,7 @@ module.exports = {
   processOrder,
   createAndProcessOrder,
   getOrders,
+  getOrderByUserId,
   getOrderById,
   updateOrderStatus,
   updatePaymentStatus,

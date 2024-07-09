@@ -77,6 +77,18 @@ const getOrders = async () => {
   });
 };
 
+const getOrderByUserId = async (userId) => {
+  return await Order.findAll({
+    where: { user_id: userId },
+    include: [
+      {
+        model: OrderItem,
+        // Removed Product association, no direct connection needed
+      },
+    ],
+  });
+};
+
 const getOrderById = async (id) => {
   return await Order.findByPk(id, {
     include: [
@@ -104,6 +116,7 @@ const deleteOrder = async (id) => {
 module.exports = {
   createOrder,
   getOrders,
+  getOrderByUserId,
   getOrderById,
   updateOrder,
   updateOrderStatus,
