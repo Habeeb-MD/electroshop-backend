@@ -11,5 +11,17 @@ const fetchProductDetails = async (productId) => {
     );
   }
 };
-
-module.exports = { fetchProductDetails };
+const authStatus = async (token) => {
+  const AUTH_SERVICE = process.env.AUTH_SERVICE_URL + "/authStatus";
+  try {
+    const response = await axios.get(AUTH_SERVICE, {
+      headers: {
+        Cookie: `jwt=${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(`Authentication failed: ${error.message}`);
+  }
+};
+module.exports = { authStatus, fetchProductDetails };

@@ -3,8 +3,12 @@ const catchAsync = require("../utils/catchAsync");
 
 const addToCart = catchAsync(async (req, res) => {
   try {
-    const { user_id, product_id, quantity } = req.body;
-    const cart = await cartService.addToCart(user_id, product_id, quantity);
+    const { product_id, quantity } = req.body;
+    const cart = await cartService.addToCart(
+      req.user._id,
+      product_id,
+      quantity,
+    );
     res.status(201).json(cart);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -13,9 +17,9 @@ const addToCart = catchAsync(async (req, res) => {
 
 const updateCartItem = catchAsync(async (req, res) => {
   try {
-    const { user_id, product_id, quantity } = req.body;
+    const { product_id, quantity } = req.body;
     const cart = await cartService.updateCartItem(
-      user_id,
+      req.user._id,
       product_id,
       quantity,
     );
@@ -27,8 +31,8 @@ const updateCartItem = catchAsync(async (req, res) => {
 
 const removeFromCart = catchAsync(async (req, res) => {
   try {
-    const { user_id, product_id } = req.body;
-    const cart = await cartService.removeFromCart(user_id, product_id);
+    const { product_id } = req.body;
+    const cart = await cartService.removeFromCart(req.user._id, product_id);
     res.status(200).json(cart);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -36,15 +40,13 @@ const removeFromCart = catchAsync(async (req, res) => {
 });
 
 const getCart = catchAsync(async (req, res) => {
-  const { user_id } = req.params;
-  const cart = await cartService.getCart(user_id);
+  const cart = await cartService.getCart(req.user._id);
   res.status(200).json(cart);
 });
 
 const clearCart = catchAsync(async (req, res) => {
   try {
-    const { user_id } = req.body;
-    const cart = await cartService.clearCart(user_id);
+    const cart = await cartService.clearCart(req.user._id);
     res.status(200).json(cart);
   } catch (error) {
     res.status(400).json({ error: error.message });

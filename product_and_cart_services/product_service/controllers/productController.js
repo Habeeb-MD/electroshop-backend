@@ -1,7 +1,7 @@
 const productService = require("../services/productService");
 
 const formatProduct = (product) => {
-  const formattedProduct = product.toJSON();
+  const formattedProduct = product;
   if (product.ProductType) {
     formattedProduct.product_type = product.ProductType.name;
     delete formattedProduct.ProductType;
